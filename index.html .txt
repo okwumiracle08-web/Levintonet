@@ -1,0 +1,98 @@
+!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LEVINTONET - Welcome</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script type="module">
+  // Import Firebase
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // YOUR FIREBASE CONFIG
+  const firebaseConfig = {
+    apiKey: "AIzaSyAKGjAmWnfNc3BsxB3QOO3-WVPiJYMyxmE",
+    authDomain: "levintone-db.firebaseapp.com",
+    projectId: "levintone-db",
+    storageBucket: "levintone-db.firebasestorage.app",
+    messagingSenderId: "833985907030",
+    appId: "1:833985907030:web:b72c882065871089586ef7"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // Make it available globally
+  window.firebaseAuth = auth;
+  window.firebaseDB = db;
+  window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+  window.addDoc = addDoc;
+  window.collection = collection;
+  window.serverTimestamp = serverTimestamp;
+</script>
+<style>
+  body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+  .glass { backdrop-filter: blur(10px); background: rgba(255,255,255,0.1); }
+</style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+<div class="glass rounded-2xl p-8 w-full max-w-md text-white text-center">
+  <h1 class="text-4xl font-bold mb-2">LEVINTONET</h1>
+  <p class="mb-6 opacity-80">Join the future of social</p>
+  
+  <input id="name" type="text" placeholder="Full Name" class="w-full p-3 mb-3 rounded-lg text-black">
+  <input id="email" type="email" placeholder="Email" class="w-full p-3 mb-3 rounded-lg text-black">
+  <input id="password" type="password" placeholder="Password" class="w-full p-3 mb-4 rounded-lg text-black">
+  
+  <button id="joinBtn" class="w-full bg-white text-purple-600 font-bold py-3 rounded-lg hover:bg-gray-100">
+    Join Now
+  </button>
+  
+  <p id="status" class="mt-4 text-sm"></p>
+</div>
+
+<script>
+document.getElementById('joinBtn').addEventListener('click', async () => {
+  const name = document.getElementById('name').value;
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const status = document.getElementById('status');
+  
+  if(!name || !email || !password) {
+    status.innerText = "Please fill all fields";
+    return;
+  }
+  
+  status.innerText = "Creating account...";
+  
+  try {
+    // Create user in Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(window.firebaseAuth, email, password);
+    const user = userCredential.user;
+    
+    // Save user data to Firestore
+    await addDoc(collection(window.firebaseDB, "users"), {
+      uid: user.uid,
+      name: name,
+      email: email,
+      createdAt: serverTimestamp()
+    });
+    
+    status.innerText = "Success! Welcome to LEVINTONET 🎉";
+    document.getElementById('name').value = "";
+    document.getElementById('email').value = "";
+    document.getElementById('password').value = "";
+    
+  } catch (error) {
+    status.innerText = "Error: " + error.message;
+  }
+});
+</script>
+
+</body>
+</html>
